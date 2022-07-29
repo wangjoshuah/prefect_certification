@@ -1,0 +1,36 @@
+###
+### A complete description of a Prefect Deployment for flow 'ingest-pokemon-data'
+###
+name: pokemon
+description: Ingest all Pokemon data from the pokeapi.co API
+tags:
+- test
+schedule: null
+parameters: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command:
+  - python
+  - -m
+  - prefect.engine
+  stream_output: true
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: ingest-pokemon-data
+manifest_path: ingest_pokemon_data-manifest.json
+storage:
+  basepath: /Users/wangjoshuah/repos/wangjoshuah/prefect_certification
+  _is_anonymous: true
+  _block_document_name: anonymous-6c703780-b4df-4258-8765-82567876195d
+  _block_document_id: fe036a69-987c-41fb-852d-678dfdf205a0
+  _block_type_slug: local-file-system
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties: {}
+  required: null
+  definitions: null

@@ -1,14 +1,17 @@
+import json
+import sys
 from typing import List
 
-import pandas as pd
 import httpx
+import pandas as pd
 from prefect import flow, task
-from prefect_dask import DaskTaskRunner
 from prefect.tasks import task_input_hash
-import json
+from prefect_dask import DaskTaskRunner
 
-base_api = "https://pokeapi.co/api/v2/"
-_storage_base_dir = "./pokemon_data/"
+print(sys.path)
+
+from src.blocks.pokemon_api_block import PokemonApiBlock, pokemon_api_block_key
+from src.blocks.storage_block import STORAGE_BLOCK, StorageBlock
 
 
 @task
@@ -16,6 +19,8 @@ def get_all_pokemon():
     """
     Get all pokemon data from the pokeapi.co API
     """
+    pokemon_api_block = PokemonApiBlock.load(pokemon_api_block_key)
+    base_api = pokemon_api_block.url
     raw_json = httpx.get(
         base_api + "pokemon", params={"limit": 151, "offset": 0}
     ).json()
@@ -29,9 +34,11 @@ def get_pokemon_data(pokemon):
     """
     Get pokemon data from the pokeapi.co API
     """
-    print(f"Pokemon id: {pokemon}")
+    pokemon_api_block = PokemonApiBlock.load(pokemon_api_block_key)
+    base_api = pokemon_api_block.url
+    storage_block = StorageBlock.load(STORAGE_BLOCK)
     data = httpx.get(base_api + "pokemon/" + pokemon).json()
-    f = open(_storage_base_dir + pokemon + ".json", "w")
+    f = open(storage_block.base_dir + pokemon + ".json", "w")
     f.write(json.dumps(data))
     f.close()
     return data
@@ -52,8 +59,9 @@ def output_pokemon_types(pokemon_types):
     """
     Output pokemon types to a CSV file
     """
+    storage_block = StorageBlock.load(STORAGE_BLOCK)
     df = pd.DataFrame(pokemon_types)
-    df.to_csv(_storage_base_dir + "pokemon_types.csv", index=False)
+    df.to_csv(storage_block.base_dir + "pokemon_types.csv", index=False)
 
 
 @flow(name="Download Pokemon Data", task_runner=DaskTaskRunner())
